@@ -1,4 +1,4 @@
-package com.scoperetail.simurai.core.config;
+package com.scoperetail.simurai.core.application.service.transform;
 
 /*-
  * *****
@@ -12,10 +12,10 @@ package com.scoperetail.simurai.core.config;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,17 +26,18 @@ package com.scoperetail.simurai.core.config;
  * =====
  */
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import java.util.Map;
+import com.scoperetail.simurai.core.application.service.transform.template.engine.TemplateEngine;
+import lombok.AllArgsConstructor;
 
-@Getter
-@Setter
-@ToString
-@EqualsAndHashCode(of = "name")
-public class Event {
-  private String name;
-  private String target;
-  private String templateData;
+@AllArgsConstructor
+public abstract class AbstractTransformer implements Transformer {
+
+  protected TemplateEngine templateEngine;
+
+  @Override
+  public String transform(final Map<String, Object> params, final String template)
+      throws Exception {
+    return templateEngine.generateTextFromTemplate(params, template);
+  }
 }
