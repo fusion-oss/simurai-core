@@ -26,9 +26,11 @@ package com.scoperetail.simurai.core.config;
  * =====
  */
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.io.*;
+import java.util.*;
+import java.util.function.*;
+import java.util.stream.*;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import lombok.Getter;
@@ -44,9 +46,21 @@ public class SimuraiConfig {
   private String resourceDirectory;
   private String resourceURL;
   private List<Event> events;
-  private final List<Broker> brokers = new ArrayList<>(1);
+  private final List<AMQPBroker> amqpBrokers = new ArrayList<>(1);
+  private final List<Endpoint> endpoints = new ArrayList<>(1);
+  private final List<String> categories = new ArrayList<>(1);
+  private List<EventEndpointMapping> eventEndpointMappings  = new ArrayList<>(1);
 
   public Optional<Event> getEventByName(final String eventName) {
     return getEvents().stream().filter(e -> e.getName().equals(eventName)).findFirst();
+  }
+
+  public Optional<Endpoint> getEndpoint(final String alias) {
+    Optional<Optional<Map<String, Object>>> eventMapping = getEventEndpointMappings().stream().map(eem -> { return eem.getEvents().stream().filter(event -> event.get("eventAlias").equals(alias)).findFirst();}).findFirst();
+    System.out.println(eventMapping);
+    Object targetUrl = eventMapping.get().get().get("targetUrl");
+    System.out.println(targetUrl);
+    Optional<Endpoint> optEndpoint = getEndpoints().stream().filter(e->e.getName().equals(targetUrl.toString())).findFirst();
+    return optEndpoint;
   }
 }

@@ -26,20 +26,13 @@ package com.scoperetail.simurai.core.config;
  * =====
  */
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 @Getter
 @Setter
-@ToString
-@EqualsAndHashCode(of = "name")
-public class Event {
-  private String name;
-  private String alias; //templateData would be formed based on this
-  private String format;
-  private String category;
-  private String headerTemplate;
-  private String bodyTemplate;
+@Data
+public class Endpoint {
+    private String name;
+    private String type;
+    private String uri;
 }
