@@ -25,8 +25,9 @@ package com.scoperetail.simurai.core.config;
  * THE SOFTWARE.
  * =====
  */
-
-import lombok.*;
+import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 @Getter
 @Setter
@@ -34,6 +35,4 @@ import lombok.*;
 public class AMQPBroker {
   private String connectionFactoryName;
   private String hostUrl;
-  //Old code
-  //private String jmsProvider;
 }
