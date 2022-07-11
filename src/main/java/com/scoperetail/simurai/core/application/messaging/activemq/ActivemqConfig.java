@@ -84,7 +84,7 @@ public class ActivemqConfig implements InitializingBean {
 
   private List<Broker> getActivemqBrokers() {
     return simuraiConfig
-        .getBrokers()
+        .getAmqpBrokers()
         .stream()
         .filter(broker -> broker.getJmsProvider().equals(ACTIVEMQ))
         .collect(Collectors.toList());

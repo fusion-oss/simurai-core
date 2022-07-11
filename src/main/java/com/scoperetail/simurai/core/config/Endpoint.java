@@ -26,38 +26,11 @@ package com.scoperetail.simurai.core.config;
  * =====
  */
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
 
-@Configuration
-@ConfigurationProperties(prefix = "simurai")
-@Getter
-@Setter
-@ToString
-public class SimuraiConfig {
-  private String resourceDirectory;
-  private String resourceURL;
-  private List<Event> events;
-  private final List<AMQPBroker> amqpBrokers = new ArrayList<>(1);
-  private final List<Endpoint> endpoints = new ArrayList<>(1);
-  private final List<String> categories = new ArrayList<>(1);
-  private final List<EventEndpointMapping> endpointMapping = new ArrayList<>(1);
-
-  public Optional<Endpoint> getEndpointbyname(final String endpointName)
-  {
-   // return getEndpointbyname(endpointName);
-    return getEndpoints().stream().filter(e -> e.getName().equals(endpointName)).findFirst();
-  }
-
-
-
-  public Optional<Event> getEventByName(final String eventName) {
-    return getEvents().stream().filter(e -> e.getName().equals(eventName)).findFirst();
-  }
+@Data
+public class Endpoint {
+    private String name;
+    private String type;
+    private String uri;
 }

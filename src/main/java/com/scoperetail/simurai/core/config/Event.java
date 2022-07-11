@@ -37,6 +37,8 @@ import lombok.ToString;
 @EqualsAndHashCode(of = "name")
 public class Event {
   private String name;
-  private String target;
-  private String templateData;
+  private String alias; //templateData would be formed based on this
+  private String format;
+  private String category;
+  private String targetUrl; // similar to target
 }
