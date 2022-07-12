@@ -1,4 +1,4 @@
-package com.scoperetail.simurai.core.config;
+package com.scoperetail.simurai.core.config.camel;
 
 /*-
  * *****
@@ -26,17 +26,14 @@ package com.scoperetail.simurai.core.config;
  * =====
  */
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 @Getter
 @Setter
-@ToString
-@EqualsAndHashCode(of = "name")
-public class Event {
-  private String name;
-  private String target;
-  private String templateData;
+public class Endpoint {
+    private String name;
+    private String type;
+    private String uri;
+
+
 }

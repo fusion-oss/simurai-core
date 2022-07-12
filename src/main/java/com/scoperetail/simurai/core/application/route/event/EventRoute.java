@@ -12,10 +12,10 @@ package com.scoperetail.simurai.core.application.route.event;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -37,35 +37,36 @@ import com.scoperetail.simurai.core.application.route.event.bean.EventBean;
 @Component
 public class EventRoute extends RouteBuilder {
 
-  private static final String APPLICATION_JSON = "application/json";
-  private static final String CAMEL_REST_COMPONENT = "servlet";
+    private static final String APPLICATION_JSON = "application/json";
+    private static final String CAMEL_REST_COMPONENT = "servlet";
 
-  @Override
-  public void configure() throws Exception {
+    @Override
+    public void configure() throws Exception {
 
-    restConfiguration().component(CAMEL_REST_COMPONENT).bindingMode(RestBindingMode.auto);
+        restConfiguration().component(CAMEL_REST_COMPONENT).bindingMode(RestBindingMode.auto);
 
-    rest("/events").produces(APPLICATION_JSON).get().to("direct:fetchEvents");
+        rest("/events").produces(APPLICATION_JSON).get().to("direct:fetchEvents");
 
-    rest("/events")
-        .consumes(APPLICATION_JSON)
-        .produces(APPLICATION_JSON)
-        .post()
-        .type(Map.class)
-        .to("direct:triggerEvent");
+        rest("/events")
+                .consumes(APPLICATION_JSON)
+                .produces(APPLICATION_JSON)
+                .post()
+                .type(Map.class)
+                .to("direct:triggerEvent");
 
-    from("direct:fetchEvents").bean(EventBean.class, "fetchEvents");
+        from("direct:fetchEvents").bean(EventBean.class, "fetchEvents");
 
-    from("direct:triggerEvent")
-        .bean(EventBean.class, "triggerEvent")
-        .toD("${exchangeProperty.targetUri}")
-        .process(
-            new Processor() {
-              @Override
-              public void process(final Exchange exchange) throws Exception {
-                //Setting up API response
-                exchange.getIn().setBody("Operation is successful");
-              }
-            });
-  }
+        from("direct:triggerEvent")
+                .bean(EventBean.class, "triggerEvent")
+                .toD("${exchangeProperty.targetUri}")
+                .process(
+                        new Processor() {
+                            @Override
+                            public void process(final Exchange exchange) throws Exception {
+                                //Setting up API response
+                                exchange.getIn().setBody("Operation is successful");
+
+                            }
+                        });
+    }
 }
