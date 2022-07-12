@@ -31,6 +31,9 @@ import java.util.stream.Collectors;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
+
+import com.scoperetail.simurai.core.config.*;
+import com.scoperetail.simurai.core.config.camel.AMQPBroker;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
@@ -38,8 +41,6 @@ import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jms.connection.CachingConnectionFactory;
-import com.scoperetail.simurai.core.config.Broker;
-import com.scoperetail.simurai.core.config.SimuraiConfig;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -64,33 +65,32 @@ public class ActivemqConfig implements InitializingBean {
   private void registerConnectionFactories(final BeanDefinitionRegistry registry)
       throws JMSException {
     boolean isPrimaryBean = true;
-    for (final Broker broker : getActivemqBrokers()) {
+    for (final AMQPBroker amqpbroker : getActivemqBrokers()) {
       final ActiveMQConnectionFactory activeMQConnectionFactory = new ActiveMQConnectionFactory();
-      activeMQConnectionFactory.setBrokerURL(broker.getUrl());
-      checkAlive(activeMQConnectionFactory, broker);
+      activeMQConnectionFactory.setBrokerURL(amqpbroker.getHostUrl());
+      checkAlive(activeMQConnectionFactory, amqpbroker);
       final BeanDefinitionBuilder factoryBeanDefinitionBuilder =
           BeanDefinitionBuilder.rootBeanDefinition(CachingConnectionFactory.class)
               .addPropertyValue("targetConnectionFactory", activeMQConnectionFactory)
               .setPrimary(isPrimaryBean);
       registry.registerBeanDefinition(
-          broker.getConnectionFactoryName(), factoryBeanDefinitionBuilder.getBeanDefinition());
+              amqpbroker.getConnectionFactoryName(), factoryBeanDefinitionBuilder.getBeanDefinition());
       isPrimaryBean = false;
       log.info(
           "Registered connection factory with name:{} for jms provider:{}",
-          broker.getConnectionFactoryName(),
-          broker.getJmsProvider());
+              amqpbroker.getConnectionFactoryName());
     }
   }
 
-  private List<Broker> getActivemqBrokers() {
+  private List<AMQPBroker> getActivemqBrokers() {
     return simuraiConfig
-        .getBrokers()
+        .getAmqpBrokers()
         .stream()
-        .filter(broker -> broker.getJmsProvider().equals(ACTIVEMQ))
+        //.filter(broker -> broker.getJmsProvider().equals(ACTIVEMQ))
         .collect(Collectors.toList());
   }
 
-  private void checkAlive(final ConnectionFactory connectionFactory, final Broker broker)
+  private void checkAlive(final ConnectionFactory connectionFactory, final AMQPBroker broker)
       throws JMSException {
     try {
       final Connection connection = connectionFactory.createConnection();
