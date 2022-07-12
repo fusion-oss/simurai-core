@@ -25,17 +25,10 @@ package com.scoperetail.simurai.core.config;
  * THE SOFTWARE.
  * =====
  */
-
-import lombok.EqualsAndHashCode;
 import lombok.Data;
 
 @Data
-@EqualsAndHashCode(of = "alias")
-public class Event {
-  private String name;
-  private String alias;
-  private String format;
-  private String category;
-  private String headerTemplate;
-  private String bodyTemplate;
+public class AMQPBroker {
+  private String connectionFactoryName;
+  private String hostUrl;
 }

@@ -43,7 +43,8 @@ public class EventRoute extends RouteBuilder {
   @Override
   public void configure() throws Exception {
 
-    restConfiguration().component(CAMEL_REST_COMPONENT).bindingMode(RestBindingMode.auto);
+    restConfiguration().component(CAMEL_REST_COMPONENT).enableCORS(true)
+            .corsAllowCredentials(true).bindingMode(RestBindingMode.auto);
 
     rest("/events").produces(APPLICATION_JSON).get().to("direct:fetchEvents");
 
