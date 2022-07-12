@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.apache.camel.Exchange;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.scoperetail.simurai.core.application.service.transform.impl.DomainToFtlTemplateTransformer;
 import com.scoperetail.simurai.core.common.util.JsonUtils;
@@ -77,36 +78,41 @@ public class EventBean {
 
   public void triggerEvent(final Exchange exchange) throws Exception {
     final Map<String, Object> headers = exchange.getIn().getHeaders();
-    final String alias = (String) headers.get(ALIAS);
+    final String eventAlias = (String) headers.get(ALIAS);
     final Map<String, Object> dataMap = exchange.getIn().getBody(Map.class);
     log.debug(
-        "Request received to trigger the event with alias:{} having request body:{} ",
-        alias,
-        dataMap);
-    final Optional<Endpoint> optEndpoint = simuraiConfig.getEndpoint(alias);
+            "Request received to trigger the event with eventAlias:{} having request body:{} ",
+            eventAlias,
+            dataMap);
+    final Optional<Endpoint> optEndpoint = simuraiConfig.getEndpoint(eventAlias);
     if (optEndpoint.isPresent()) {
-      log.debug("Event found with name:{}", alias);
+      log.debug("Event found with name:{}", eventAlias);
       final Endpoint endpoint = optEndpoint.get();
-      final Path headerTemplatePath =
-          Paths.get(simuraiConfig.getResourceDirectory(), alias, HEADER_TEMPLATE_NAME);
-      if (Files.exists(headerTemplatePath)) {
-        final String headerData =
-            domainToFtlTemplateTransformer.transform(
-                dataMap, FILE_COMPONENT + headerTemplatePath.toAbsolutePath().toString());
-        final Map<String, Object> header =
-            JsonUtils.unmarshal(Optional.of(headerData), Map.class.getCanonicalName());
-        exchange.getIn().setHeaders(header);
+
+      String headerData = getTransformedData(eventAlias, HEADER_TEMPLATE_NAME, dataMap);
+      if(StringUtils.isNotBlank(headerData)){
+      final Map<String, Object> header =
+              JsonUtils.unmarshal(Optional.of(headerData), Map.class.getCanonicalName());
+      exchange.getIn().setHeaders(header);
       }
 
-      final Path bodyTemplatePath =
-          Paths.get(simuraiConfig.getResourceDirectory(), alias, TRANSFORMER_TEMPLATE_NAME);
-      if (Files.exists(bodyTemplatePath)) {
-        final String bodyData =
-            domainToFtlTemplateTransformer.transform(
-                dataMap, FILE_COMPONENT + bodyTemplatePath.toAbsolutePath().toString());
+      String bodyData = getTransformedData(eventAlias, TRANSFORMER_TEMPLATE_NAME, dataMap);
+      if(StringUtils.isNotBlank(bodyData)) {
         exchange.getIn().setBody(bodyData);
       }
       exchange.setProperty(TARGET_URI, endpoint.getUri());
     }
+  }
+
+  private String getTransformedData(String eventAlias, String templateName, Map<String, Object> dataMap) throws Exception {
+    final Path templatePath =
+            Paths.get(simuraiConfig.getResourceDirectory(), eventAlias, templateName);
+    String  transformedData = null;
+    if (Files.exists(templatePath)) {
+      transformedData =
+              domainToFtlTemplateTransformer.transform(
+                      dataMap, FILE_COMPONENT + templatePath.toAbsolutePath().toString());
+    }
+    return transformedData;
   }
 }

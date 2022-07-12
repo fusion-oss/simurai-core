@@ -34,15 +34,11 @@ import java.util.Map;
 import java.util.Optional;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
 
 @Configuration
 @ConfigurationProperties(prefix = "simurai")
-@Getter
-@Setter
-@ToString
+@Data
 public class SimuraiConfig {
   private String resourceDirectory;
   private String resourceURL;
@@ -53,23 +49,29 @@ public class SimuraiConfig {
   private final List<EventEndpointMapping> eventEndpointMappings = new ArrayList<>(1);
 
   public Optional<Event> getEventByName(final String eventName) {
-    return getEvents().stream().filter(e -> e.getName().equals(eventName)).findFirst();
+    return events.stream().filter(e -> e.getName().equals(eventName)).findFirst();
   }
 
   public Optional<Endpoint> getEndpoint(final String alias) {
+
     final Optional<Optional<Map<String, Object>>> eventMapping =
-        getEventEndpointMappings()
-            .stream()
-            .map(
-                eem ->
-                    eem.getEvents()
-                        .stream()
-                        .filter(event -> event.get(EVENT_ALIAS).equals(alias))
-                        .findFirst())
-            .findFirst();
-    final Object targetUrl = eventMapping.get().get().get(TARGET_URL);
-    final Optional<Endpoint> optEndpoint =
-        getEndpoints().stream().filter(e -> e.getName().equals(targetUrl.toString())).findFirst();
+            eventEndpointMappings
+                    .stream()
+                    .map(
+                            eem ->
+                                    eem.getEvents()
+                                            .stream()
+                                            .filter(event -> event.get(EVENT_ALIAS).equals(alias))
+                                            .findFirst())
+                    .findFirst();
+    Optional<Endpoint> optEndpoint = Optional.ofNullable(null);
+    if (eventMapping.isPresent()) {
+      Optional<Map<String, Object>> optEventMap = eventMapping.get();
+      if (optEventMap.isPresent()) {
+        Object targetUrl = optEventMap.get().get(TARGET_URL);
+        optEndpoint = getEndpoints().stream().filter(e -> e.getName().equals(targetUrl.toString())).findFirst();
+      }
+    }
     return optEndpoint;
   }
 }

@@ -26,10 +26,8 @@ package com.scoperetail.simurai.core.config;
  * =====
  */
 
-import lombok.*;
+import lombok.Data;
 
-@Getter
-@Setter
 @Data
 public class Endpoint {
     private String name;

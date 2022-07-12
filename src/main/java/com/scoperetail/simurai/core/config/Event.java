@@ -27,13 +27,9 @@ package com.scoperetail.simurai.core.config;
  */
 
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
 
-@Getter
-@Setter
-@ToString
+@Data
 @EqualsAndHashCode(of = "alias")
 public class Event {
   private String name;

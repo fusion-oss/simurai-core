@@ -26,12 +26,14 @@ package com.scoperetail.simurai.core.config;
  * =====
  */
 
-import lombok.*;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 
-@Getter
-@Setter
+
+@Data
 @EqualsAndHashCode(of = "endpointName")
 public class EventEndpointMapping {
     private String endpointName;
