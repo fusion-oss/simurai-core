@@ -66,6 +66,7 @@ public class EventBean {
   }
 
   private EventDTO buildEventDto(final Event event) throws IOException {
+    final Optional<Endpoint> optEndpoint = simuraiConfig.getEndpoint(event.getAlias());
     return EventDTO.builder()
         .name(event.getName())
         .alias(event.getAlias())
@@ -82,6 +83,8 @@ public class EventBean {
                     simuraiConfig.getResourceDirectory(),
                     event.getAlias(),
                     TRANSFORMER_TEMPLATE_NAME)))
+        .errorQueue(event.getErrorQueue())
+        .targetEndpoint(optEndpoint.orElse(null))
         .build();
   }
 
