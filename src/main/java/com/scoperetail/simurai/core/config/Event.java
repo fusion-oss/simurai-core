@@ -36,6 +36,5 @@ public class Event {
   private String alias;
   private String format;
   private String category;
-  private String headerTemplate;
-  private String bodyTemplate;
+  private String source;
 }

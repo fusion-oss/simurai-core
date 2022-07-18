@@ -35,12 +35,14 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.apache.camel.Exchange;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import com.scoperetail.simurai.core.application.route.event.dto.EventDTO;
 import com.scoperetail.simurai.core.application.service.transform.impl.DomainToFtlTemplateTransformer;
 import com.scoperetail.simurai.core.common.util.JsonUtils;
 import com.scoperetail.simurai.core.config.Endpoint;
@@ -56,15 +58,31 @@ public class EventBean {
 
   public void fetchEvents(final Exchange exchange) throws Exception {
     log.debug("Request received to fetch the events");
-    final List<Event> events = simuraiConfig.getEvents();
-    final String resourceDirectory = simuraiConfig.getResourceDirectory();
-    for (final Event event : events) {
-      event.setHeaderTemplate(
-          getTemplate(Paths.get(resourceDirectory, event.getAlias(), HEADER_TEMPLATE_NAME)));
-      event.setBodyTemplate(
-          getTemplate(Paths.get(resourceDirectory, event.getAlias(), TRANSFORMER_TEMPLATE_NAME)));
+    final List<EventDTO> events = new ArrayList<>();
+    for (final Event event : simuraiConfig.getEvents()) {
+      events.add(buildEventDto(event));
     }
     exchange.getIn().setBody(events);
+  }
+
+  private EventDTO buildEventDto(final Event event) throws IOException {
+    return EventDTO.builder()
+        .name(event.getName())
+        .alias(event.getAlias())
+        .format(event.getFormat())
+        .category(event.getCategory())
+        .source(event.getSource())
+        .headerTemplate(
+            getTemplate(
+                Paths.get(
+                    simuraiConfig.getResourceDirectory(), event.getAlias(), HEADER_TEMPLATE_NAME)))
+        .bodyTemplate(
+            getTemplate(
+                Paths.get(
+                    simuraiConfig.getResourceDirectory(),
+                    event.getAlias(),
+                    TRANSFORMER_TEMPLATE_NAME)))
+        .build();
   }
 
   private String getTemplate(final Path templatePath) throws IOException {
@@ -81,37 +99,39 @@ public class EventBean {
     final String eventAlias = (String) headers.get(ALIAS);
     final Map<String, Object> dataMap = exchange.getIn().getBody(Map.class);
     log.debug(
-            "Request received to trigger the event with eventAlias:{} having request body:{} ",
-            eventAlias,
-            dataMap);
+        "Request received to trigger the event with eventAlias:{} having request body:{} ",
+        eventAlias,
+        dataMap);
     final Optional<Endpoint> optEndpoint = simuraiConfig.getEndpoint(eventAlias);
     if (optEndpoint.isPresent()) {
       log.debug("Event found with name:{}", eventAlias);
       final Endpoint endpoint = optEndpoint.get();
 
-      String headerData = getTransformedData(eventAlias, HEADER_TEMPLATE_NAME, dataMap);
-      if(StringUtils.isNotBlank(headerData)){
-      final Map<String, Object> header =
-              JsonUtils.unmarshal(Optional.of(headerData), Map.class.getCanonicalName());
-      exchange.getIn().setHeaders(header);
+      final String headerData = getTransformedData(eventAlias, HEADER_TEMPLATE_NAME, dataMap);
+      if (StringUtils.isNotBlank(headerData)) {
+        final Map<String, Object> header =
+            JsonUtils.unmarshal(Optional.of(headerData), Map.class.getCanonicalName());
+        exchange.getIn().setHeaders(header);
       }
 
-      String bodyData = getTransformedData(eventAlias, TRANSFORMER_TEMPLATE_NAME, dataMap);
-      if(StringUtils.isNotBlank(bodyData)) {
+      final String bodyData = getTransformedData(eventAlias, TRANSFORMER_TEMPLATE_NAME, dataMap);
+      if (StringUtils.isNotBlank(bodyData)) {
         exchange.getIn().setBody(bodyData);
       }
       exchange.setProperty(TARGET_URI, endpoint.getUri());
     }
   }
 
-  private String getTransformedData(String eventAlias, String templateName, Map<String, Object> dataMap) throws Exception {
+  private String getTransformedData(
+      final String eventAlias, final String templateName, final Map<String, Object> dataMap)
+      throws Exception {
     final Path templatePath =
-            Paths.get(simuraiConfig.getResourceDirectory(), eventAlias, templateName);
-    String  transformedData = null;
+        Paths.get(simuraiConfig.getResourceDirectory(), eventAlias, templateName);
+    String transformedData = null;
     if (Files.exists(templatePath)) {
       transformedData =
-              domainToFtlTemplateTransformer.transform(
-                      dataMap, FILE_COMPONENT + templatePath.toAbsolutePath().toString());
+          domainToFtlTemplateTransformer.transform(
+              dataMap, FILE_COMPONENT + templatePath.toAbsolutePath().toString());
     }
     return transformedData;
   }
