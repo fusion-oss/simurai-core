@@ -67,6 +67,30 @@ public class EventBean {
     exchange.getIn().setBody(events);
   }
 
+  private EventDTO buildEventDto(final Event event) throws IOException {
+    final Optional<Endpoint> optEndpoint = simuraiConfig.getEndpoint(event.getAlias());
+    return EventDTO.builder()
+        .name(event.getName())
+        .alias(event.getAlias())
+        .format(event.getFormat())
+        .category(event.getCategory())
+        .source(event.getSource())
+        .headerTemplate(
+            getTemplate(
+                Paths.get(
+                    simuraiConfig.getResourceDirectory(), event.getAlias(), HEADER_TEMPLATE_NAME)))
+        .bodyTemplate(
+            getTemplate(
+                Paths.get(
+                    simuraiConfig.getResourceDirectory(),
+                    event.getAlias(),
+                    TRANSFORMER_TEMPLATE_NAME)))
+        .errorQueue(event.getErrorQueue())
+		.usage(event.getUsage())
+        .targetEndpoint(optEndpoint.orElse(null))
+        .build();
+  }
+
   private String getTemplate(final Path templatePath) throws IOException {
     String template = null;
     if (Files.exists(templatePath)) {

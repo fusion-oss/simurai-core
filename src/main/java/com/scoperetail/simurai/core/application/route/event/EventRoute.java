@@ -48,6 +48,8 @@ public class EventRoute extends RouteBuilder {
 
     rest("/events").produces(APPLICATION_JSON).get().to("direct:fetchEvents");
 
+      rest("/test").produces(APPLICATION_JSON).get().to("direct:test");
+
     rest("/events")
         .consumes(APPLICATION_JSON)
         .produces(APPLICATION_JSON)
@@ -56,6 +58,8 @@ public class EventRoute extends RouteBuilder {
         .to("direct:triggerEvent");
 
     from("direct:fetchEvents").bean(EventBean.class, "fetchEvents");
+
+    from("direct:test").log("Rest call successfull");
 
     from("direct:triggerEvent")
         .bean(EventBean.class, "triggerEvent")
