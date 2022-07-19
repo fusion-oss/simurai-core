@@ -38,4 +38,5 @@ public class Event {
   private String category;
   private String source;
   private String errorQueue;
+  private String usage;
 }

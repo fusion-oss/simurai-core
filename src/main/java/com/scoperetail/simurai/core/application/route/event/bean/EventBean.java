@@ -84,6 +84,7 @@ public class EventBean {
                     event.getAlias(),
                     TRANSFORMER_TEMPLATE_NAME)))
         .errorQueue(event.getErrorQueue())
+		.usage(event.getUsage())
         .targetEndpoint(optEndpoint.orElse(null))
         .build();
   }

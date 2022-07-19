@@ -79,4 +79,8 @@ public class SimuraiConfig {
     }
     return optEndpoint;
   }
+
+  public Optional<Endpoint> getEndpointByName(final String endpointName) {
+    return endpoints.stream().filter(e -> e.getName().equals(endpointName)).findFirst();
+  }
 }

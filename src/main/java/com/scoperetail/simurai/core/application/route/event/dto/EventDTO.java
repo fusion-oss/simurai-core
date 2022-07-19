@@ -41,5 +41,6 @@ public class EventDTO {
   private String headerTemplate;
   private String bodyTemplate;
   private String errorQueue;
+  private String usage;
   private Endpoint targetEndpoint;
 }
