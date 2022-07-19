@@ -1,4 +1,4 @@
-package com.scoperetail.simurai.core.config;
+package com.scoperetail.simurai.core.application.route.event.dto;
 
 /*-
  * *****
@@ -12,10 +12,10 @@ package com.scoperetail.simurai.core.config;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,16 +26,20 @@ package com.scoperetail.simurai.core.config;
  * =====
  */
 
-import lombok.EqualsAndHashCode;
+import com.scoperetail.simurai.core.config.Endpoint;
+import lombok.Builder;
 import lombok.Data;
 
 @Data
-@EqualsAndHashCode(of = "alias")
-public class Event {
+@Builder
+public class EventDTO {
   private String name;
   private String alias;
   private String format;
   private String category;
   private String source;
+  private String headerTemplate;
+  private String bodyTemplate;
   private String errorQueue;
+  private Endpoint targetEndpoint;
 }

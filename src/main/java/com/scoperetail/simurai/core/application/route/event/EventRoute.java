@@ -12,10 +12,10 @@ package com.scoperetail.simurai.core.application.route.event;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -43,8 +43,11 @@ public class EventRoute extends RouteBuilder {
   @Override
   public void configure() throws Exception {
 
-    restConfiguration().component(CAMEL_REST_COMPONENT).enableCORS(true)
-            .corsAllowCredentials(true).bindingMode(RestBindingMode.auto);
+    restConfiguration()
+        .component(CAMEL_REST_COMPONENT)
+        .enableCORS(true)
+        .corsAllowCredentials(true)
+        .bindingMode(RestBindingMode.auto);
 
     rest("/events").produces(APPLICATION_JSON).get().to("direct:fetchEvents");
 
