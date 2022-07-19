@@ -26,23 +26,18 @@ package com.scoperetail.simurai.core.route;
  * =====
  */
 
-import com.scoperetail.simurai.core.application.route.event.bean.EventBean;
-import com.scoperetail.simurai.core.application.route.event.dto.EventDTO;
-import com.scoperetail.simurai.core.config.AMQPBroker;
 import com.scoperetail.simurai.core.config.Endpoint;
-import com.scoperetail.simurai.core.config.EventEndpointMapping;
 import com.scoperetail.simurai.core.config.SimuraiConfig;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.camel.CamelContext;
+import org.apache.camel.Exchange;
+import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.rest.RestBindingMode;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import javax.jms.ConnectionFactory;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -59,21 +54,22 @@ public class OrchestratorRoute {
     private static final String POST = "POST";
     private static final String QUEUE = "QUEUE";
     private static final String TOPIC = "TOPIC";
+    private static final int STATUS_OK= 200;
 
 
     @PostConstruct
     public void init() throws Exception {
 
         List<String> inboundEndpoints = simuraiConfig.getInboundEndpoints();
-
+        camelContext.addRoutes(new Dummy());
         inboundEndpoints.forEach(
                 inboundEndpoint -> {
                     Optional<Endpoint> endpoints = simuraiConfig.getEndpointByName(inboundEndpoint);
                     if (endpoints.isPresent()) {
-                        System.out.println(endpoints.get().getType() + "TYPE------------------");
                         if (endpoints.get().getType().equals(POST)
                                 || endpoints.get().getType().equals(GET)) {
                             try {
+
                                 camelContext.addRoutes(new DynamicRestRouteBuilder(camelContext, endpoints.get()));
                             } catch (Exception e) {
                                 throw new RuntimeException(e);
@@ -104,37 +100,49 @@ public class OrchestratorRoute {
         @Override
         public void configure() throws Exception {
 
-           // restConfiguration().component(CAMEL_REST_COMPONENT).bindingMode(RestBindingMode.auto);
-            from("direct:dummy").log("Rest call successfull");
+            restConfiguration().component(CAMEL_REST_COMPONENT).bindingMode(RestBindingMode.auto);
+
             if (GET.equals(endpoint.getType())) {
-                rest(endpoint.getUri()).produces(APPLICATION_JSON).get().to("direct:dummy");
+                rest(endpoint.getUri()).produces(APPLICATION_JSON).get().to("direct:getDummy");
             } else if (POST.equals(endpoint.getType())) {
                 rest(endpoint.getUri())
                         .consumes(APPLICATION_JSON)
                         .produces(APPLICATION_JSON)
                         .post()
-                        .type(Map.class).to("direct:dummy");
+                        .type(Map.class).to("direct:postDummy");
             }
-            System.out.println("REST" + endpoint.getUri());
+        }
+    }
+
+    private static final class Dummy extends RouteBuilder{
+
+        @Override
+        public void configure() throws Exception {
+            from("direct:getDummy").log("Rest GET call successful").setHeader(Exchange.HTTP_RESPONSE_CODE, constant(STATUS_OK));
+            from("direct:postDummy").log("Rest POST call successful").setHeader(Exchange.HTTP_RESPONSE_CODE, constant(STATUS_OK));
         }
     }
 
     private static final class DynamicJMSRouteBuilder extends RouteBuilder {
 
-        private Endpoint endpoint;
+        private final Endpoint endpoint;
 
-        @Autowired private SimuraiConfig simuraiConfig;
-
-        public <url> DynamicJMSRouteBuilder(final CamelContext camelContext, final Endpoint endpoint) {
+        private DynamicJMSRouteBuilder(final CamelContext camelContext, final Endpoint endpoint) {
             super(camelContext);
             this.endpoint = endpoint;
         }
 
         @Override
         public void configure() throws Exception {
-            System.out.println(endpoint.getType() + "TYPE " + endpoint.getUri() + " URLLLL");
-
-            from(endpoint.getUri()).to("activemq:queue:enduri");
+            from(endpoint.getUri())
+                    .process(
+                            new Processor() {
+                                @Override
+                                public void process(Exchange exchange) {
+                                    log.info("Headers:" + exchange.getIn().getHeaders().toString());
+                                    log.info("Response Body:" + exchange.getIn().getBody().toString());
+                                }
+                            });
         }
     }
 }

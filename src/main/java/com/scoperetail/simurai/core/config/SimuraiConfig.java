@@ -12,10 +12,10 @@ package com.scoperetail.simurai.core.config;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -46,6 +46,7 @@ public class SimuraiConfig {
   private final List<AMQPBroker> amqpBrokers = new ArrayList<>(1);
   private final List<Endpoint> endpoints = new ArrayList<>(1);
   private final List<String> categories = new ArrayList<>(1);
+  private final List<String> inboundEndpoints = new ArrayList<>(1);
   private final List<EventEndpointMapping> eventEndpointMappings = new ArrayList<>(1);
 
   public Optional<Event> getEventByName(final String eventName) {
@@ -55,21 +56,25 @@ public class SimuraiConfig {
   public Optional<Endpoint> getEndpoint(final String alias) {
 
     final Optional<Optional<Map<String, Object>>> eventMapping =
-            eventEndpointMappings
-                    .stream()
-                    .map(
-                            eem ->
-                                    eem.getEvents()
-                                            .stream()
-                                            .filter(event -> event.get(EVENT_ALIAS).equals(alias))
-                                            .findFirst())
-                    .findFirst();
+        eventEndpointMappings
+            .stream()
+            .map(
+                eem ->
+                    eem.getEvents()
+                        .stream()
+                        .filter(event -> event.get(EVENT_ALIAS).equals(alias))
+                        .findFirst())
+            .findFirst();
     Optional<Endpoint> optEndpoint = Optional.ofNullable(null);
     if (eventMapping.isPresent()) {
-      Optional<Map<String, Object>> optEventMap = eventMapping.get();
+      final Optional<Map<String, Object>> optEventMap = eventMapping.get();
       if (optEventMap.isPresent()) {
-        Object targetUrl = optEventMap.get().get(TARGET_URL);
-        optEndpoint = getEndpoints().stream().filter(e -> e.getName().equals(targetUrl.toString())).findFirst();
+        final Object targetUrl = optEventMap.get().get(TARGET_URL);
+        optEndpoint =
+            getEndpoints()
+                .stream()
+                .filter(e -> e.getName().equals(targetUrl.toString()))
+                .findFirst();
       }
     }
     return optEndpoint;
