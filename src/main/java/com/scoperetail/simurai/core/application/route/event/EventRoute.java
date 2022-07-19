@@ -26,6 +26,7 @@ package com.scoperetail.simurai.core.application.route.event;
  * =====
  */
 
+import static com.scoperetail.simurai.core.common.constant.CamelComponentConstants.CAMEL_REST_COMPONENT;
 import java.util.Map;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -38,7 +39,6 @@ import com.scoperetail.simurai.core.application.route.event.bean.EventBean;
 public class EventRoute extends RouteBuilder {
 
   private static final String APPLICATION_JSON = "application/json";
-  private static final String CAMEL_REST_COMPONENT = "servlet";
 
   @Override
   public void configure() throws Exception {
