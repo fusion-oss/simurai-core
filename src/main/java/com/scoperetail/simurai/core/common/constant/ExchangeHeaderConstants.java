@@ -30,6 +30,4 @@ public final class ExchangeHeaderConstants {
   private ExchangeHeaderConstants() {}
 
   public static final String ALIAS = "alias";
-  public static final String HTTP_URL = "CamelHttpUrl";
-  public static final String QUERY_PARAM = "CamelHttpQuery";
 }

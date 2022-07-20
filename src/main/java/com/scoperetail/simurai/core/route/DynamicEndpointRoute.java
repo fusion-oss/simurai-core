@@ -41,8 +41,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.scoperetail.simurai.core.common.constant.CamelComponentConstants.CAMEL_REST_COMPONENT;
-import static com.scoperetail.simurai.core.common.constant.ExchangeHeaderConstants.HTTP_URL;
-import static com.scoperetail.simurai.core.common.constant.ExchangeHeaderConstants.QUERY_PARAM;
 
 @Component
 @Slf4j
@@ -93,13 +91,11 @@ public class DynamicEndpointRoute {
         @Override
         public void configure() throws Exception {
             from("direct:mockHttp").process((final Exchange exchange) -> {
-                        log.info("Request URL {}", exchange.getIn().getHeaders().get(HTTP_URL));
-                        log.info("Response Body {}", exchange.getIn().getBody(String.class));
-                        log.info("Query Params {}", exchange.getIn().getHeaders().get(QUERY_PARAM));
-                    })
-                    .log(
-                            "Request received")
-                    .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(HttpStatus.STATUS_OK.getValue()));
+                log.info("Request URL {}", exchange.getIn().getHeaders().get(Exchange.HTTP_URL));
+                log.info("Response Body {}", exchange.getIn().getBody(String.class));
+                log.info("Query Params {}", exchange.getIn().getHeaders().get(Exchange.HTTP_QUERY));
+                log.info("Path Params {}", exchange.getIn().getHeaders().get(Exchange.HTTP_PATH));
+            }).log("Request received").setHeader(Exchange.HTTP_RESPONSE_CODE, constant(HttpStatus.STATUS_OK.getValue()));
         }
     }
 
@@ -136,15 +132,11 @@ public class DynamicEndpointRoute {
 
             restConfiguration().component(CAMEL_REST_COMPONENT).bindingMode(RestBindingMode.auto);
 
-            var parts = endpoint.getUri().split("/");
-            var pathParam = parts[1];
-
-            rest(endpoint.getUri())
-                    .post()
-                    .param().name(pathParam).dataType("String").endParam()
-                    .to("direct:mockHttp")
-                    .get()
-                    .to("direct:mockHttp");
+            if (EndpointType.GET.name().equals(endpoint.getType())) {
+                rest(endpoint.getUri()).get().to("direct:mockHttp");
+            } else if (EndpointType.POST.name().equals(endpoint.getType())) {
+                rest(endpoint.getUri()).post().to("direct:mockHttp");
+            }
         }
     }
 }
