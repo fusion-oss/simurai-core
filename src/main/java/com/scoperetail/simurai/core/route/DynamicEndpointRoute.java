@@ -136,17 +136,15 @@ public class DynamicEndpointRoute {
 
             restConfiguration().component(CAMEL_REST_COMPONENT).bindingMode(RestBindingMode.auto);
 
-            if (EndpointType.GET.name().equals(endpoint.getType())) {
-                rest(endpoint.getUri()).get().to("direct:mockHttp");
-            } else if (EndpointType.POST.name().equals(endpoint.getType())) {
-                var parts = endpoint.getUri().split("/");
-                var pathParam = parts[1];
+            var parts = endpoint.getUri().split("/");
+            var pathParam = parts[1];
 
-                rest(endpoint.getUri())
-                        .post()
-                        .param().name(pathParam).dataType("String").endParam()
-                        .to("direct:mockHttp");
-            }
+            rest(endpoint.getUri())
+                    .post()
+                    .param().name(pathParam).dataType("String").endParam()
+                    .to("direct:mockHttp")
+                    .get()
+                    .to("direct:mockHttp");
         }
     }
 }
